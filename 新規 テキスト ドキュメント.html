@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Canvas柱状图</title>
+  <style>
+    canvas {
+      border: 1px solid #000;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="myCanvas" width="600" height="400"></canvas>
+
+  <script>
+    var canvas = document.getElementById('myCanvas');
+    var ctx = canvas.getContext('2d');
+
+    // 数据
+    var data = [20, -40, 60, -80, 100];
+    var barWidth = 40;
+    var barSpacing = 20;
+    var startX = (canvas.width - (data.length * (barWidth + barSpacing) - barSpacing)) / 2; // 居中显示
+
+    // 绘制柱状图函数
+    function drawBarChart() {
+      for (var i = 0; i < data.length; i++) {
+        var x = startX + i * (barWidth + barSpacing);
+        var height = Math.abs(data[i]); // 高度取绝对值
+        var y = data[i] >= 0 ? canvas.height - 110 - height : canvas.height - 110;
+        ctx.fillStyle = data[i] >= 0 ? 'rgba(70, 130, 180, 0.8)' : 'rgba(255, 99, 71, 0.8)'; // 正数为蓝色，负数为红色
+        ctx.fillRect(x, y, barWidth, height);
+      }
+    }
+
+    // 初始绘制柱状图
+    drawBarChart();
+
+    // 鼠标移动事件
+    canvas.addEventListener('mousemove', function(e) {
+      var rect = canvas.getBoundingClientRect();
+      var mouseX = e.clientX - rect.left;
+      var mouseY = e.clientY - rect.top;
+
+      var insideChart = mouseX >= startX && mouseX <= startX + data.length * (barWidth + barSpacing) && mouseY >= canvas.height - 110;
+
+      if (insideChart) {
+        for (var i = 0; i < data.length; i++) {
+          var x = startX + i * (barWidth + barSpacing);
+          var height = Math.abs(data[i]);
+          var y = data[i] >= 0 ? canvas.height - 110 - height : canvas.height - 110;
+          if (mouseX > x && mouseX < x + barWidth && mouseY >= y && mouseY <= y + height) {
+            showBubble(i, x, y, data[i]);
+            return;
+          }
+        }
+        hideBubble();
+      } else {
+        hideBubble();
+      }
+    });
+
+    // 显示吹泡
+    function showBubble(barIndex, x, y, value) {
+      var bubbleText = 'Value: ' + value;
+      var bubbleWidth = bubbleText.length * 8 + 20; // 根据字数动态调整吹泡宽度
+      var bubbleHeight = 30;
+
+      // 计算吹泡位置
+      var bubbleX = x + barWidth / 2 - bubbleWidth / 2;
+      var bubbleY = y - bubbleHeight - 10;
+
+      // 绘制吹泡
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBarChart();
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // 吹泡颜色设为白色
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)'; // 添加阴影
+      ctx.shadowBlur = 10;
+      ctx.fillRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight);
+      ctx.fillStyle = '#000';
+      ctx.font = '12px Arial'; // 设置字体大小和样式
+      ctx.fillText(bubbleText, bubbleX + 10, bubbleY + 20);
+    }
+
+    // 隐藏吹泡
+    function hideBubble() {
+      // 隐藏吹泡
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBarChart();
+    }
+  </script>
+</body>
+</html>
